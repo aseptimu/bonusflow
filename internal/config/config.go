@@ -9,9 +9,10 @@ import (
 )
 
 type ConfigType struct {
-	ServerAddress string `env:"SERVER_ADDRESS"`
-	DSN           string `env:"DATABASE_DSN"`
-	SecretKey     string `env:"SECRET_KEY"`
+	ServerAddress        string `env:"SERVER_ADDRESS"`
+	AccrualSystemAddress string `env:"ACCRUAL_ADDRESS"`
+	DSN                  string `env:"DATABASE_DSN"`
+	SecretKey            string `env:"SECRET_KEY"`
 }
 
 func NewConfig() *ConfigType {
@@ -22,6 +23,7 @@ func NewConfig() *ConfigType {
 	config := &ConfigType{}
 
 	flag.StringVar(&config.ServerAddress, "a", "localhost:8080", "HTTP server address")
+	flag.StringVar(&config.AccrualSystemAddress, "r", "localhost:8085", "accrual system address")
 	flag.StringVar(&config.DSN, "d", "", "PostgreSQL connection DSN")
 	flag.StringVar(&config.SecretKey, "s", "", "Secret key")
 
