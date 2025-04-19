@@ -48,7 +48,7 @@ func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code, err := h.orderService.UploadOrder(r.Context(), userID, orderNumber)
+	code, _ := h.orderService.UploadOrder(r.Context(), userID, orderNumber)
 
 	switch code {
 	case http.StatusOK:
