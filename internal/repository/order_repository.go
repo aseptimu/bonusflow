@@ -84,5 +84,8 @@ func (r *PostgresOrderRepository) GetOrdersByUserID(ctx context.Context, userID 
 		}
 		orders = append(orders, &order)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return orders, nil
 }
