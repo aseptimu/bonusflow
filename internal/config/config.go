@@ -9,9 +9,9 @@ import (
 )
 
 type ConfigType struct {
-	ServerAddress        string `env:"SERVER_ADDRESS"`
-	AccrualSystemAddress string `env:"ACCRUAL_ADDRESS"`
-	DSN                  string `env:"DATABASE_DSN"`
+	ServerAddress        string `env:"RUN_ADDRESS"`
+	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	DSN                  string `env:"DATABASE_URI"`
 	SecretKey            string `env:"SECRET_KEY"`
 }
 
