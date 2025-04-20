@@ -28,7 +28,20 @@ func NewBalanceService(repo repository.BalanceStore) BalanceManager {
 }
 
 func (s *balanceService) GetUserBalance(ctx context.Context, userID int) (*models.Balance, error) {
-	return s.repo.GetUserBalanceByUserID(ctx, userID)
+	accr, err := s.repo.GetAccrualSum(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	with, err := s.repo.GetWithdrawalsSum(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Balance{
+		Current:   accr - with,
+		Withdrawn: with,
+	}, nil
 }
 
 func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error {
@@ -36,11 +49,18 @@ func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber s
 		return ErrInvalidOrderNumber
 	}
 
-	bal, err := s.repo.GetUserBalanceByUserID(ctx, userID)
+	withdrawals, err := s.repo.GetWithdrawalsSum(ctx, userID)
 	if err != nil {
 		return err
 	}
-	if bal.Current < sum {
+
+	balance, err := s.repo.GetAccrualSum(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	resultBalance := withdrawals + balance
+	if resultBalance < sum {
 		return ErrInsufficientFunds
 	}
 
