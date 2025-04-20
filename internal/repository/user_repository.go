@@ -8,7 +8,7 @@ import (
 	"github.com/aseptimu/internal/models"
 )
 
-type UserRepository interface {
+type UserStore interface {
 	CreateUser(ctx context.Context, user *models.User) error
 	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
 }
@@ -17,7 +17,7 @@ type PostgresUserRepository struct {
 	DB *sql.DB
 }
 
-func NewPostgresUserRepository(db *sql.DB) UserRepository {
+func NewUserRepository(db *sql.DB) UserStore {
 	return &PostgresUserRepository{DB: db}
 }
 

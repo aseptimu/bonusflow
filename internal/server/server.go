@@ -32,13 +32,17 @@ func Serve() {
 	}
 	defer db.Close()
 
-	userRepo := repository.NewPostgresUserRepository(db)
+	userRepo := repository.NewUserRepository(db)
 	userService := services.NewUserService(userRepo, conf)
 	userHandler := handlers.NewUserHandler(userService)
 
-	orderRepo := repository.NewPostgresOrderRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
 	orderService := services.NewOrderService(orderRepo, conf.AccrualSystemAddress)
 	orderHandler := handlers.NewOrderHandler(orderService)
+
+	balanceRepo := repository.NewBalanceRepository(db)
+	balanceService := services.NewBalanceService(balanceRepo)
+	balanceHandler := handlers.NewBalanceHandler(balanceService)
 
 	r.Group(func(r chi.Router) {
 		r.Post("/api/user/register", userHandler.RegisterUser)
@@ -55,11 +59,11 @@ func Serve() {
 			})
 
 			r.Route("/balance", func(r chi.Router) {
-				r.Get("/", handlers.GetUserBalance)
-				r.Post("/withdraw", handlers.WithdrawBalance)
+				r.Get("/", balanceHandler.GetUserBalance)
+				r.Post("/withdraw", balanceHandler.WithdrawBalance)
 			})
 
-			r.Get("/withdrawals", handlers.GetUserWithdrawals)
+			r.Get("/withdrawals", balanceHandler.GetUserWithdrawals)
 		})
 	})
 

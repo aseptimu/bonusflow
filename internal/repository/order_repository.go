@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type OrderRepository interface {
+type OrderStore interface {
 	GetOrderByNumber(ctx context.Context, number string) (*models.Order, error)
 	CreateOrder(ctx context.Context, order *models.Order) error
 	UpdateOrder(ctx context.Context, number, status string, accrual float64) error
@@ -18,7 +18,7 @@ type PostgresOrderRepository struct {
 	DB *sql.DB
 }
 
-func NewPostgresOrderRepository(db *sql.DB) OrderRepository {
+func NewOrderRepository(db *sql.DB) OrderStore {
 	return &PostgresOrderRepository{DB: db}
 }
 

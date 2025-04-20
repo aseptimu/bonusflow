@@ -21,17 +21,17 @@ var (
 	ErrOrderAlreadyExistsSame      = errors.New("номер заказа уже загружен этим пользователем")
 )
 
-type OrderService interface {
+type OrderManager interface {
 	UploadOrder(ctx context.Context, userID int, orderNumber string) (int, error)
 	GetUserOrders(ctx context.Context, userID int) ([]*models.Order, error)
 }
 
 type orderService struct {
-	repo             repository.OrderRepository
+	repo             repository.OrderStore
 	accrualSystemURL string
 }
 
-func NewOrderService(repo repository.OrderRepository, accrualSystemURL string) OrderService {
+func NewOrderService(repo repository.OrderStore, accrualSystemURL string) OrderManager {
 	return &orderService{repo, accrualSystemURL}
 }
 
