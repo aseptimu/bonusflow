@@ -28,7 +28,7 @@ func NewBalanceService(repo repository.BalanceStore) BalanceManager {
 }
 
 func (s *balanceService) GetUserBalance(ctx context.Context, userID int) (*models.Balance, error) {
-	return s.repo.GetUserBalanceByUserId(ctx, userID)
+	return s.repo.GetUserBalanceByUserID(ctx, userID)
 }
 
 func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error {
@@ -36,7 +36,7 @@ func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber s
 		return ErrInvalidOrderNumber
 	}
 
-	bal, err := s.repo.GetUserBalanceByUserId(ctx, userID)
+	bal, err := s.repo.GetUserBalanceByUserID(ctx, userID)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 type BalanceStore interface {
-	GetUserBalanceByUserId(ctx context.Context, userID int) (*models.Balance, error)
+	GetUserBalanceByUserID(ctx context.Context, userID int) (*models.Balance, error)
 	CreateWithdrawal(ctx context.Context, userID int, orderNumber string, sum float64) error
 	ListWithdrawalsByUserID(ctx context.Context, userID int) ([]*models.Withdrawal, error)
 }
@@ -23,7 +23,7 @@ func NewBalanceRepository(db *sql.DB) BalanceStore {
 const getAccrualSum = `SELECT COALESCE(SUM(accrual), 0) FROM orders WHERE user_id = $1 AND status = 'PROCESSED'`
 const getWithdrawalsSum = `SELECT COALESCE(SUM(sum), 0) FROM withdrawals WHERE user_id = $1`
 
-func (r *PostgresBalanceRepository) GetUserBalanceByUserId(ctx context.Context, userID int) (*models.Balance, error) {
+func (r *PostgresBalanceRepository) GetUserBalanceByUserID(ctx context.Context, userID int) (*models.Balance, error) {
 	balance := &models.Balance{}
 	err := r.DB.QueryRowContext(ctx, getAccrualSum, userID).Scan(&balance.Current)
 	if err != nil {
