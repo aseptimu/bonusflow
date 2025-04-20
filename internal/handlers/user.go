@@ -64,5 +64,6 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Authorization", "Bearer "+token)
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
