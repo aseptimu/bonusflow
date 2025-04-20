@@ -110,7 +110,7 @@ var ErrTooManyRequests = errors.New("too many requests to accrual server")
 
 func (s *orderService) fetchAndStoreAccrual(ctx context.Context, number string) error {
 	url := fmt.Sprintf("%s/api/orders/%s", strings.TrimRight(s.accrualSystemURL, "/"), number)
-	resp, err := http.Get("http://" + url)
+	resp, err := http.Get(url)
 	if err != nil {
 		utils.LogWithError(ctx, "fetchAccrual: не удалось выполнить запрос", err)
 		return err
