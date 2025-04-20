@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/aseptimu/internal/models"
 	"github.com/aseptimu/internal/repository"
+	"math"
 	"strconv"
 )
 
@@ -38,9 +39,13 @@ func (s *balanceService) GetUserBalance(ctx context.Context, userID int) (*model
 		return nil, err
 	}
 
+	rawCurrent := accr - with
+	current := math.Round(rawCurrent*100) / 100
+	withdrawn := math.Round(with*100) / 100
+
 	return &models.Balance{
-		Current:   accr - with,
-		Withdrawn: with,
+		Current:   current,
+		Withdrawn: withdrawn,
 	}, nil
 }
 
@@ -59,8 +64,10 @@ func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber s
 		return err
 	}
 
-	resultBalance := withdrawals + balance
-	if resultBalance < sum {
+	rawCurrent := balance - withdrawals
+	current := math.Round(rawCurrent*100) / 100
+
+	if current < sum {
 		return ErrInsufficientFunds
 	}
 
