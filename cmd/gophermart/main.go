@@ -1,3 +1,7 @@
 package main
 
-func main() {}
+import "github.com/aseptimu/internal/server"
+
+func main() {
+	server.Serve()
+}
