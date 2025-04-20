@@ -21,6 +21,8 @@ func NewOrderHandler(orderService services.OrderService) *OrderHandler {
 }
 
 func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	userIDVal := r.Context().Value(middlewares.UserIDKey)
 	if userIDVal == nil {
 		http.Error(w, "Пользователь не аутентифицирован", http.StatusUnauthorized)
@@ -67,6 +69,8 @@ func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) GetUserOrders(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	userIDVal := r.Context().Value(middlewares.UserIDKey)
 	if userIDVal == nil {
 		http.Error(w, "Пользователь не аутентифицирован", http.StatusUnauthorized)
