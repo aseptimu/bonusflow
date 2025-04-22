@@ -1,19 +1,27 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/aseptimu/internal/middlewares"
+	"github.com/aseptimu/internal/models"
 	"github.com/aseptimu/internal/services"
 	"github.com/aseptimu/internal/utils"
 	"net/http"
 )
 
 type BalanceHandler struct {
-	orderService services.BalanceManager
+	orderService BalanceManager
 }
 
-func NewBalanceHandler(orderService services.BalanceManager) *BalanceHandler {
+type BalanceManager interface {
+	GetUserBalance(ctx context.Context, userID int) (*models.Balance, error)
+	Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error
+	ListWithdrawals(ctx context.Context, userID int) ([]*models.Withdrawal, error)
+}
+
+func NewBalanceHandler(orderService BalanceManager) *BalanceHandler {
 	return &BalanceHandler{orderService: orderService}
 }
 

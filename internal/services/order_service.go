@@ -21,25 +21,20 @@ var (
 	ErrOrderAlreadyExistsSame      = errors.New("номер заказа уже загружен этим пользователем")
 )
 
-type OrderManager interface {
-	UploadOrder(ctx context.Context, userID int, orderNumber string) (int, error)
-	GetUserOrders(ctx context.Context, userID int) ([]*models.Order, error)
-}
-
-type orderService struct {
-	repo             repository.OrderStore
+type OrderService struct {
+	repo             *repository.OrderRepository
 	accrualSystemURL string
 }
 
-func NewOrderService(repo repository.OrderStore, accrualSystemURL string) OrderManager {
-	return &orderService{repo, accrualSystemURL}
+func NewOrderService(repo *repository.OrderRepository, accrualSystemURL string) *OrderService {
+	return &OrderService{repo, accrualSystemURL}
 }
 
-func (s *orderService) GetUserOrders(ctx context.Context, userID int) ([]*models.Order, error) {
+func (s *OrderService) GetUserOrders(ctx context.Context, userID int) ([]*models.Order, error) {
 	return s.repo.GetOrdersByUserID(ctx, userID)
 }
 
-func (s *orderService) UploadOrder(ctx context.Context, userID int, orderNumber string) (int, error) {
+func (s *OrderService) UploadOrder(ctx context.Context, userID int, orderNumber string) (int, error) {
 	matched, err := regexp.MatchString(`^\d+$`, orderNumber)
 	if err != nil || !matched {
 		utils.LogWithError(ctx, "UploadOrder: номер заказа должен содержать только цифры", err)
@@ -108,7 +103,7 @@ type AccrualSystemResponse struct {
 
 var ErrTooManyRequests = errors.New("too many requests to accrual server")
 
-func (s *orderService) fetchAndStoreAccrual(ctx context.Context, number string) error {
+func (s *OrderService) fetchAndStoreAccrual(ctx context.Context, number string) error {
 	url := fmt.Sprintf("%s/api/orders/%s", strings.TrimRight(s.accrualSystemURL, "/"), number)
 	resp, err := http.Get(url)
 	if err != nil {

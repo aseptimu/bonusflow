@@ -7,19 +7,12 @@ import (
 	"time"
 )
 
-type OrderStore interface {
-	GetOrderByNumber(ctx context.Context, number string) (*models.Order, error)
-	CreateOrder(ctx context.Context, order *models.Order) error
-	UpdateOrder(ctx context.Context, number, status string, accrual float64) error
-	GetOrdersByUserID(ctx context.Context, userID int) ([]*models.Order, error)
-}
-
-type PostgresOrderRepository struct {
+type OrderRepository struct {
 	DB *sql.DB
 }
 
-func NewOrderRepository(db *sql.DB) OrderStore {
-	return &PostgresOrderRepository{DB: db}
+func NewOrderRepository(db *sql.DB) *OrderRepository {
+	return &OrderRepository{DB: db}
 }
 
 const getOrderByNumberQuery = `
@@ -28,7 +21,7 @@ const getOrderByNumberQuery = `
 	WHERE number = $1
 `
 
-func (r *PostgresOrderRepository) GetOrderByNumber(ctx context.Context, number string) (*models.Order, error) {
+func (r *OrderRepository) GetOrderByNumber(ctx context.Context, number string) (*models.Order, error) {
 	row := r.DB.QueryRowContext(ctx, getOrderByNumberQuery, number)
 	var order models.Order
 	err := row.Scan(&order.ID, &order.Number, &order.UserID, &order.Status, &order.UploadedAt, &order.Accrual)
@@ -44,7 +37,7 @@ const createOrderQuery = `
 	RETURNING id
 `
 
-func (r *PostgresOrderRepository) CreateOrder(ctx context.Context, order *models.Order) error {
+func (r *OrderRepository) CreateOrder(ctx context.Context, order *models.Order) error {
 	order.UploadedAt = time.Now()
 	_, err := r.DB.ExecContext(ctx, createOrderQuery, order.Number, order.UserID, order.Status, order.UploadedAt)
 	return err
@@ -57,7 +50,7 @@ const updateOrderQuery = `
    WHERE number = $1
 `
 
-func (r *PostgresOrderRepository) UpdateOrder(ctx context.Context, number, status string, accrual float64) error {
+func (r *OrderRepository) UpdateOrder(ctx context.Context, number, status string, accrual float64) error {
 	_, err := r.DB.ExecContext(ctx, updateOrderQuery, number, status, accrual)
 	return err
 }
@@ -69,7 +62,7 @@ const getOrdersByUserIDQuery = `
 	ORDER BY uploaded_at
 `
 
-func (r *PostgresOrderRepository) GetOrdersByUserID(ctx context.Context, userID int) ([]*models.Order, error) {
+func (r *OrderRepository) GetOrdersByUserID(ctx context.Context, userID int) ([]*models.Order, error) {
 	rows, err := r.DB.QueryContext(ctx, getOrdersByUserIDQuery, userID)
 	if err != nil {
 		return nil, err

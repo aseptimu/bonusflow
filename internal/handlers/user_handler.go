@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,10 +11,15 @@ import (
 )
 
 type UserHandler struct {
-	authService services.UserManager
+	authService UserManager
 }
 
-func NewUserHandler(authService services.UserManager) *UserHandler {
+type UserManager interface {
+	Register(ctx context.Context, login, password string) (string, error)
+	Login(ctx context.Context, login, password string) (string, error)
+}
+
+func NewUserHandler(authService UserManager) *UserHandler {
 	return &UserHandler{
 		authService: authService,
 	}
@@ -45,7 +51,6 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Authorization", "Bearer "+token)
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
 
 func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -65,5 +70,4 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Authorization", "Bearer "+token)
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }

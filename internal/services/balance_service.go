@@ -14,21 +14,15 @@ var (
 	ErrInsufficientFunds  = errors.New("insufficient funds")
 )
 
-type BalanceManager interface {
-	GetUserBalance(ctx context.Context, userID int) (*models.Balance, error)
-	Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error
-	ListWithdrawals(ctx context.Context, userID int) ([]*models.Withdrawal, error)
+type BalanceService struct {
+	repo *repository.BalanceRepository
 }
 
-type balanceService struct {
-	repo repository.BalanceStore
+func NewBalanceService(repo *repository.BalanceRepository) *BalanceService {
+	return &BalanceService{repo}
 }
 
-func NewBalanceService(repo repository.BalanceStore) BalanceManager {
-	return &balanceService{repo}
-}
-
-func (s *balanceService) GetUserBalance(ctx context.Context, userID int) (*models.Balance, error) {
+func (s *BalanceService) GetUserBalance(ctx context.Context, userID int) (*models.Balance, error) {
 	accr, err := s.repo.GetAccrualSum(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -49,7 +43,7 @@ func (s *balanceService) GetUserBalance(ctx context.Context, userID int) (*model
 	}, nil
 }
 
-func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error {
+func (s *BalanceService) Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error {
 	if _, err := strconv.ParseUint(orderNumber, 10, 64); err != nil {
 		return ErrInvalidOrderNumber
 	}
@@ -74,6 +68,6 @@ func (s *balanceService) Withdraw(ctx context.Context, userID int, orderNumber s
 	return s.repo.CreateWithdrawal(ctx, userID, orderNumber, sum)
 }
 
-func (s *balanceService) ListWithdrawals(ctx context.Context, userID int) ([]*models.Withdrawal, error) {
+func (s *BalanceService) ListWithdrawals(ctx context.Context, userID int) ([]*models.Withdrawal, error) {
 	return s.repo.ListWithdrawalsByUserID(ctx, userID)
 }

@@ -16,7 +16,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func Serve() {
+func Serve() error {
 	conf := config.NewConfig()
 
 	migrations.RunMigrations(conf.DSN)
@@ -27,8 +27,8 @@ func Serve() {
 	slog.Info("Connecting db", "dsn", conf.DSN)
 	db, err := sql.Open("pgx", conf.DSN)
 	if err != nil {
-		slog.Error("Failed to open DB", "error", err)
-		return
+
+		return err
 	}
 	defer db.Close()
 
@@ -44,15 +44,13 @@ func Serve() {
 	balanceService := services.NewBalanceService(balanceRepo)
 	balanceHandler := handlers.NewBalanceHandler(balanceService)
 
-	r.Group(func(r chi.Router) {
-		r.Post("/api/user/register", userHandler.RegisterUser)
-		r.Post("/api/user/login", userHandler.LoginUser)
-	})
+	r.Route("/api/user", func(r chi.Router) {
+		r.Post("/register", userHandler.RegisterUser)
+		r.Post("/login", userHandler.LoginUser)
 
-	r.Group(func(r chi.Router) {
-		r.Use(middlewares.JWTAuthMiddleware(conf.SecretKey))
+		r.Group(func(r chi.Router) {
+			r.Use(middlewares.JWTAuthMiddleware(conf.SecretKey))
 
-		r.Route("/api/user", func(r chi.Router) {
 			r.Route("/orders", func(r chi.Router) {
 				r.Post("/", orderHandler.UploadOrder)
 				r.Get("/", orderHandler.GetUserOrders)
@@ -70,6 +68,7 @@ func Serve() {
 	slog.Info("Starting server", "address", "http://"+conf.ServerAddress)
 	slog.Info("Starting accrual server", "address", "http://"+conf.AccrualSystemAddress)
 	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
-		slog.Error("Server failed", "error", err)
+		return err
 	}
+	return nil
 }

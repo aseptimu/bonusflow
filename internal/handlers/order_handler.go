@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/aseptimu/internal/middlewares"
-	"github.com/aseptimu/internal/services"
+	"github.com/aseptimu/internal/models"
 	"io"
 	"net/http"
 	"strconv"
@@ -13,10 +14,15 @@ import (
 )
 
 type OrderHandler struct {
-	orderService services.OrderManager
+	orderService OrderManager
 }
 
-func NewOrderHandler(orderService services.OrderManager) *OrderHandler {
+type OrderManager interface {
+	UploadOrder(ctx context.Context, userID int, orderNumber string) (int, error)
+	GetUserOrders(ctx context.Context, userID int) ([]*models.Order, error)
+}
+
+func NewOrderHandler(orderService OrderManager) *OrderHandler {
 	return &OrderHandler{orderService: orderService}
 }
 

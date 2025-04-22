@@ -8,22 +8,17 @@ import (
 	"github.com/aseptimu/internal/models"
 )
 
-type UserStore interface {
-	CreateUser(ctx context.Context, user *models.User) error
-	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
-}
-
-type PostgresUserRepository struct {
+type UserRepository struct {
 	DB *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) UserStore {
-	return &PostgresUserRepository{DB: db}
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{DB: db}
 }
 
 const createUserQuery = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
 
-func (r *PostgresUserRepository) CreateUser(ctx context.Context, user *models.User) error {
+func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
 	return r.DB.QueryRowContext(ctx, createUserQuery, user.Login, user.Password).Scan(&user.ID)
 }
 
@@ -31,7 +26,7 @@ var ErrUserNotFound = errors.New("пользователь не найден")
 
 const getUserByLoginQuery = `SELECT id, login, password FROM users WHERE login = $1`
 
-func (r *PostgresUserRepository) GetUserByLogin(ctx context.Context, login string) (*models.User, error) {
+func (r *UserRepository) GetUserByLogin(ctx context.Context, login string) (*models.User, error) {
 	row := r.DB.QueryRowContext(ctx, getUserByLoginQuery, login)
 
 	var user models.User

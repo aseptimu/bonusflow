@@ -17,24 +17,19 @@ const tokenExpirationTime = time.Hour * 72
 
 var ErrorUserAlreadyExists = errors.New("user already exists")
 
-type UserManager interface {
-	Register(ctx context.Context, login, password string) (string, error)
-	Login(ctx context.Context, login, password string) (string, error)
-}
-
-type userService struct {
-	repo repository.UserStore
+type UserService struct {
+	repo *repository.UserRepository
 	conf *config.ConfigType
 }
 
-func NewUserService(repo repository.UserStore, conf *config.ConfigType) UserManager {
-	return &userService{
+func NewUserService(repo *repository.UserRepository, conf *config.ConfigType) *UserService {
+	return &UserService{
 		repo: repo,
 		conf: conf,
 	}
 }
 
-func (s *userService) Register(ctx context.Context, login, password string) (string, error) {
+func (s *UserService) Register(ctx context.Context, login, password string) (string, error) {
 	if login == "" || password == "" {
 		return "", errors.New("login and password must be provided")
 	}
@@ -78,7 +73,7 @@ func (s *userService) Register(ctx context.Context, login, password string) (str
 	return token, nil
 }
 
-func (s *userService) Login(ctx context.Context, login, password string) (string, error) {
+func (s *UserService) Login(ctx context.Context, login, password string) (string, error) {
 	if login == "" || password == "" {
 		return "", errors.New("login and password must be provided")
 	}
