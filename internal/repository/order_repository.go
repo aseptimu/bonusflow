@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/aseptimu/internal/models"
+	"strings"
 	"time"
 )
 
@@ -81,4 +83,36 @@ func (r *OrderRepository) GetOrdersByUserID(ctx context.Context, userID int) ([]
 		return nil, err
 	}
 	return orders, nil
+}
+
+const getOrdersByStatusQuery = `
+        SELECT number, user_id, status, uploaded_at, accrual
+          FROM orders
+         WHERE status IN (%s)
+      ORDER BY uploaded_at
+`
+
+func (r *OrderRepository) GetOrdersByStatus(ctx context.Context, statuses []string) ([]*models.Order, error) {
+	args := make([]interface{}, len(statuses))
+	in := make([]string, len(statuses))
+	for i, s := range statuses {
+		args[i] = s
+		in[i] = fmt.Sprintf("$%d", i+1)
+	}
+	query := fmt.Sprintf(getOrdersByStatusQuery, strings.Join(in, ","))
+	rows, err := r.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []*models.Order
+	for rows.Next() {
+		var o models.Order
+		if err := rows.Scan(&o.Number, &o.UserID, &o.Status, &o.UploadedAt, &o.Accrual); err != nil {
+			return nil, err
+		}
+		out = append(out, &o)
+	}
+	return out, rows.Err()
 }

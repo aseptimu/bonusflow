@@ -1,19 +1,20 @@
 package server
 
 import (
+	"context"
 	"database/sql"
+	"github.com/aseptimu/internal/config"
+	"github.com/aseptimu/internal/handlers"
 	"github.com/aseptimu/internal/middlewares"
 	"github.com/aseptimu/internal/migrations"
 	"github.com/aseptimu/internal/repository"
 	"github.com/aseptimu/internal/services"
 	"github.com/go-chi/chi/v5"
-	"log/slog"
-	"net/http"
-
-	"github.com/aseptimu/internal/config"
-	"github.com/aseptimu/internal/handlers"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"log/slog"
+	"net/http"
+	"time"
 )
 
 func Serve() error {
@@ -43,6 +44,9 @@ func Serve() error {
 	balanceRepo := repository.NewBalanceRepository(db)
 	balanceService := services.NewBalanceService(balanceRepo)
 	balanceHandler := handlers.NewBalanceHandler(balanceService)
+
+	worker := services.NewAccrualWorker(orderRepo, orderService, 10*time.Second)
+	go worker.Start(context.Background())
 
 	r.Route("/api/user", func(r chi.Router) {
 		r.Post("/register", userHandler.RegisterUser)
