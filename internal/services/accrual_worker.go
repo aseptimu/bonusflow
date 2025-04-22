@@ -69,7 +69,10 @@ func (w *AccrualWorker) Start(ctx context.Context) {
 				select {
 				case jobs <- o.Number:
 				case <-ctx.Done():
-					break
+					close(jobs)
+					wg.Wait()
+					close(results)
+					return
 				}
 			}
 		}
