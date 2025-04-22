@@ -70,10 +70,12 @@ func (s *OrderService) UploadOrder(ctx context.Context, userID int, orderNumber 
 		return http.StatusInternalServerError, err
 	}
 
-	err = s.fetchAndStoreAccrual(context.Background(), orderNumber)
-	if err != nil {
-		utils.LogWithError(ctx, "async accrual fetch failed", err)
-	}
+	go func() {
+		err := s.fetchAndStoreAccrual(context.Background(), orderNumber)
+		if err != nil {
+			utils.LogWithError(ctx, "async accrual fetch failed", err)
+		}
+	}()
 
 	return http.StatusAccepted, nil
 }
