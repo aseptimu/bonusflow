@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/aseptimu/internal/models"
-	"github.com/aseptimu/internal/repository"
 	"math"
 	"strconv"
 )
@@ -14,11 +13,18 @@ var (
 	ErrInsufficientFunds  = errors.New("insufficient funds")
 )
 
-type BalanceService struct {
-	repo *repository.BalanceRepository
+type BalanceRepository interface {
+	GetAccrualSum(ctx context.Context, userID int) (float64, error)
+	GetWithdrawalsSum(ctx context.Context, userID int) (float64, error)
+	CreateWithdrawal(ctx context.Context, userID int, orderNumber string, sum float64) error
+	ListWithdrawalsByUserID(ctx context.Context, userID int) ([]*models.Withdrawal, error)
 }
 
-func NewBalanceService(repo *repository.BalanceRepository) *BalanceService {
+type BalanceService struct {
+	repo BalanceRepository
+}
+
+func NewBalanceService(repo BalanceRepository) *BalanceService {
 	return &BalanceService{repo}
 }
 

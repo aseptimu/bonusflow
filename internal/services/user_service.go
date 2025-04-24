@@ -17,12 +17,17 @@ const tokenExpirationTime = time.Hour * 72
 
 var ErrorUserAlreadyExists = errors.New("user already exists")
 
+type UserRepository interface {
+	CreateUser(ctx context.Context, user *models.User) error
+	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
+}
+
 type UserService struct {
-	repo *repository.UserRepository
+	repo UserRepository
 	conf *config.ConfigType
 }
 
-func NewUserService(repo *repository.UserRepository, conf *config.ConfigType) *UserService {
+func NewUserService(repo UserRepository, conf *config.ConfigType) *UserService {
 	return &UserService{
 		repo: repo,
 		conf: conf,

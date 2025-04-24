@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/aseptimu/internal/repository"
 	"net/http"
 	"regexp"
 	"strings"
@@ -21,12 +20,20 @@ var (
 	ErrOrderAlreadyExistsSame      = errors.New("номер заказа уже загружен этим пользователем")
 )
 
+type OrderRepository interface {
+	GetOrderByNumber(ctx context.Context, number string) (*models.Order, error)
+	CreateOrder(ctx context.Context, order *models.Order) error
+	UpdateOrder(ctx context.Context, number, status string, accrual float64) error
+	GetOrdersByUserID(ctx context.Context, userID int) ([]*models.Order, error)
+	GetOrdersByStatus(ctx context.Context, statuses []string) ([]*models.Order, error)
+}
+
 type OrderService struct {
-	repo             *repository.OrderRepository
+	repo             OrderRepository
 	accrualSystemURL string
 }
 
-func NewOrderService(repo *repository.OrderRepository, accrualSystemURL string) *OrderService {
+func NewOrderService(repo OrderRepository, accrualSystemURL string) *OrderService {
 	return &OrderService{repo, accrualSystemURL}
 }
 
